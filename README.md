@@ -238,5 +238,5 @@ Retrieve a list of transactions (yesterday)
 Retrieve a list of transactions (any date range)
 ------------------------------------------------
 
-	$sp->WebLogin('ltr','admin','password');
+	$sp->WebLogin('username','admin','password');
 	print_r($sp->GetTransactions(strtotime('1/1/2008'), strtotime('30/1/2008'))); // Retrieves all transactions between 1/1/2008 and 30/1/2008
