@@ -43,6 +43,7 @@ Global
 
 The following examples all the basic PHP setup to kick things off.
 Obviously we need to load the library first:
+
 	<?php
 	include('securepay.php');
 
