@@ -200,11 +200,26 @@ class SecurePay {
 	public $LastPreauthId;
 
 	/**
+	* The last dispatched request
+	* @access public
+	* @var string
+	*/
+	public $RequestXml;
+
+	/**
+	* The XML returned by the server in response to RequestXml
+	* @access public
+	* @see RequestXml
+	* @var array
+	*/
+	public $ResponseXml;
+
+	/**
 	* The XML tree provided from the last transaction
 	* @access public
 	* @var array
 	*/
-	public $ResponseXml;
+	public $ResponseTree;
 
 	/**
 	* Securepay status code from the last transaction
@@ -352,13 +367,15 @@ class SecurePay {
 		// }}}
 		$this->ValidExpiryDate(); // Reformat the expiry date if necessary
 		$this->Cvv = str_pad($this->Cvv, 3, '0', STR_PAD_LEFT);
-		$this->ResponseXml = simplexml_load_string($this->_Dispatch($this->_ComposePayment()));
-		$this->StatusCode = $this->ResponseXml->Status->statusCode;
-		$this->StatusCodeText = $this->ResponseXml->Status->statusDescription;
+		$this->RequestXml = $this->_ComposePayment();
+		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
+		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
+		$this->StatusCode = $this->ResponseTree->Status->statusCode;
+		$this->StatusCodeText = $this->ResponseTree->Status->statusDescription;
 		$server_code = $this->_TranslateServerCode($this->StatusCode);
-		if (isset($this->ResponseXml->Payment->TxnList->Txn->responseCode)) { // Has a response code
-			$this->ResponseCode = $this->ResponseXml->Payment->TxnList->Txn->responseCode;
-			$this->ResponseCodeText = $this->ResponseXml->Payment->TxnList->Txn->responseText;
+		if (isset($this->ResponseTree->Payment->TxnList->Txn->responseCode)) { // Has a response code
+			$this->ResponseCode = $this->ResponseTree->Payment->TxnList->Txn->responseCode;
+			$this->ResponseCodeText = $this->ResponseTree->Payment->TxnList->Txn->responseText;
 			$result = $this->_TranslateResponseCode($this->ResponseCode);
 		} else { // No success with the response code - return the server code error
 			$result = $server_code;
@@ -377,10 +394,12 @@ class SecurePay {
 	*/
 	function Trigger($OrderId = null) {
 		if ($OrderId) $this->OrderId = $OrderId;
-		$this->ResponseXml = simplexml_load_string($this->_Dispatch($this->_ComposeTrigger()));
-		$server_code = $this->_TranslateServerCode($this->ResponseXml->Status->statusCode);
-		if (isset($this->ResponseXml->Payment->TxnList->Txn->responseCode)) { // Has a response code
-			return $this->_TranslateResponseCode($this->ResponseCode = $this->ResponseXml->Payment->TxnList->Txn->responseCode);
+		$this->RequestXml = $this->_ComposeTrigger();
+		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
+		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
+		$server_code = $this->_TranslateServerCode($this->ResponseTree->Status->statusCode);
+		if (isset($this->ResponseTree->Payment->TxnList->Txn->responseCode)) { // Has a response code
+			return $this->_TranslateResponseCode($this->ResponseCode = $this->ResponseTree->Payment->TxnList->Txn->responseCode);
 		} else { // No success with the response code - return the server code error
 			return $server_code;
 		}
@@ -391,8 +410,10 @@ class SecurePay {
 	* @return bool TRUE if the server connection and login information returned a correct result
 	*/
 	function TestConnection() {
-		$this->ResponseXml = simplexml_load_string($this->_Dispatch($this->_ComposeEcho()));
-		return ($this->_TranslateServerCode($this->ResponseXml->Status->statusCode) == SECUREPAY_STATUS_OK);
+		$this->RequestXml = $this->_ComposeEcho()
+		$this->ResponseXml = $this->_Dispatch($this->ReponseXml);
+		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
+		return ($this->_TranslateServerCode($this->ResponseTree->Status->statusCode) == SECUREPAY_STATUS_OK);
 	}
 
 	/**
