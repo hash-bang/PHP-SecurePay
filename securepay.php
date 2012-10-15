@@ -127,6 +127,13 @@ class SecurePay {
 
 
 	/**
+	* Indicates if the transaction to be processed is actually a PreAuth rather than a normal charge
+	* @access public
+	* @var bool
+	*/
+	public $PreAuth;
+
+	/**
 	* The credit card number to work with
 	* @access public
 	* @var int|string
@@ -334,15 +341,18 @@ class SecurePay {
 	* @return int Returns the corresponding SECUREPAY_STATUS_* code
 	*/
 	function Process($ChargeAmount = null, $ChargeCurrency = null, $Cc = null, $ExpiryDate = null, $Cvv = null, $OrderId = null, $PreAuth = FALSE) {
+		// Set class variables from function call for later use {{{
 		if ($ChargeAmount) $this->ChargeAmount = $ChargeAmount;
 		if ($ChargeCurrency) $this->ChargeCurrency = $ChargeCurrency;
 		if ($Cc) $this->Cc = $Cc;
 		if ($ExpiryDate) $this->ExpiryDate = $ExpiryDate;
 		if ($Cvv) $this->Cvv = $Cvv;
 		if ($OrderId) $this->OrderId = $OrderId;
+		if ($PreAuth) $this->PreAuth = $PreAuth;
+		// }}}
 		$this->ValidExpiryDate(); // Reformat the expiry date if necessary
 		$this->Cvv = str_pad($this->Cvv, 3, '0', STR_PAD_LEFT);
-		$this->ResponseXml = simplexml_load_string($this->_Dispatch($this->_ComposePayment($PreAuth)));
+		$this->ResponseXml = simplexml_load_string($this->_Dispatch($this->_ComposePayment()));
 		$this->StatusCode = $this->ResponseXml->Status->statusCode;
 		$this->StatusCodeText = $this->ResponseXml->Status->statusDescription;
 		$server_code = $this->_TranslateServerCode($this->StatusCode);
@@ -795,11 +805,11 @@ class SecurePay {
 
 	/**
 	* Creates the XML request for a SecurePay Echo
-	* @param bool $PreAuth Whether the transaction is a PreAuth rather than a standard payment. If FALSE (the default) a standard payment is produced
+	* This function reads $this->PreAuth to determine whether the transaction is a PreAuth rather than a standard payment. If FALSE (the default) a standard payment is produced
 	* @return string The XML string for a SecurePay Echo request
 	* @access private
 	*/
-	function _ComposePayment($PreAuth = FALSE) {
+	function _ComposePayment() {
 		$this->LastMessageId = $this->_GetMessageId();
 		$cents = intval($this->ChargeAmount * 100); // Convert to cents
 		$timestamp = date('YdmHis000+Z'); // See Appendix E of the SecureXML standard for more details on this date format
@@ -862,12 +872,12 @@ class SecurePay {
 			$message .= "\t<Payment>\n";
 			$message .= "\t\t<TxnList count=\"1\">\n"; // In the current API this can only ever be 1
 			$message .= "\t\t\t<Txn ID=\"1\">\n"; // Likewise limited to 1
-			$message .= "\t\t\t\t<txnType>" . ($PreAuth ? '10' : '0') . "</txnType>\n"; // 0 = Standard payment, 10 = Pre-Auth
+			$message .= "\t\t\t\t<txnType>" . ($this->PreAuth ? '10' : '0') . "</txnType>\n"; // 0 = Standard payment, 10 = Pre-Auth
 			$message .= "\t\t\t\t<txnSource>23</txnSource>\n"; // SecurePay API always demands the value 23
 			$message .= "\t\t\t\t<amount>$cents</amount>\n";
 			$message .= "\t\t\t\t<currency>{$this->ChargeCurrency}</currency>\n";
 			$message .= "\t\t\t\t<purchaseOrderNo>{$this->OrderId}</purchaseOrderNo>\n";
-			if (!$PreAuth && $this->LastPreauthId) // Processing a standard payment and the previous transaction reserved a PreAuth code
+			if (!$this->PreAuth && $this->LastPreauthId) // Processing a standard payment and the previous transaction reserved a PreAuth code
 				$message .= "\t\t\t\t<preauthID>{$this->LastPreauthId}</preauthID>\n";
 			$message .= "\t\t\t\t<CreditCardInfo>\n";
 			$message .= "\t\t\t\t\t<cardNumber>{$this->Cc}</cardNumber>\n";

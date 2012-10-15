@@ -145,11 +145,25 @@ Process a payment (Method 2)
 	$sp->OrderId = 'ORD34234';
 	$sp->Process();
 
-Pre-authorize a payment
------------------------
+Pre-authorize a payment (Method 1)
+----------------------------------
 
 	// This is the same process as passing a regular payment but the last parameter indicates that it should be treated as a PreAuth transaction
 	$sp->Process(123, 'USD', '462834666666', '07/09', '321', 'ORD34234', TRUE);
+
+
+Pre-authorize a payment (Method 2)
+----------------------------------
+
+	// Exactly the same as a regular charge but with PreAuth = 1
+	$sp->PreAuth = 1;
+	$sp->Cc = 462834666666;
+	$sp->ExpiryDate = '07/09';
+	$sp->ChargeAmount = 123;
+	$sp->ChargeCurrency = 'USD';
+	$sp->Cvv = 321;
+	$sp->OrderId = 'ORD34234';
+	$sp->Process();
 
 Setup a repeating payment (Method 1)
 ------------------------------------
