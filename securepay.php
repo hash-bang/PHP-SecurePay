@@ -305,9 +305,8 @@ class SecurePay {
 	*/
 	function SecurePay($AccountName = null, $AccountPassword = null, $TestMode = FALSE) {
 		if ($AccountName && $AccountPassword)
-			$this->Login($AccountName, $AccountPassword);
+			$this->Login($AccountName, $AccountPassword, $TestMode);
 		$this->ChargeCurrency = 'USD'; // Default currency to USD
-		$this->TestMode = $TestMode;
 		$this->Repeat = SECUREPAY_REPEAT_NEVER;
 		$this->RepeatTrigger = TRUE;
 	}
@@ -316,14 +315,16 @@ class SecurePay {
 	* Shorthand function to set the account_name and account_password variables
 	* @param string $AccountName The account name to use for payments (provided by SecurePay)
 	* @param string $AccountPassword The account password to use for payments (provided by SecurePay)
+	* @param bool $TestMode Whether to use TestMode with all transactions
 	* @see SecurePay()
 	* @see $AccountName
 	* @see $AccountPassword
 	* @return void
 	*/
-	function Login($AccountName, $AccountPassword) {
+	function Login($AccountName, $AccountPassword, $TestMode = FALSE) {
 		$this->AccountName = $AccountName;
 		$this->AccountPassword = $AccountPassword;
+		$this->TestMode = $TestMode;
 	}
 
 	/**
