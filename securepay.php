@@ -413,7 +413,7 @@ class SecurePay {
 	*/
 	function TestConnection() {
 		$this->RequestXml = $this->_ComposeEcho();
-		$this->ResponseXml = $this->_Dispatch($this->ReponseXml);
+		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
 		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
 		return ($this->_TranslateServerCode($this->ResponseTree->Status->statusCode) == SECUREPAY_STATUS_OK);
 	}
