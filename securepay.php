@@ -518,8 +518,12 @@ class SecurePay {
 	function SetupRepeat($when, $count = 0) {
 		if (is_string($when)) { // Translate $when to constant if supported
 			$translate = array(
-				'daily' => SECUREPAY_REPEAT_DAILY, 'weekly' => SECUREPAY_REPEAT_WEEKLY, 'fortnightly' => SECUREPAY_REPEAT_FORTNIGHTLY,
-				'monthly' => SECUREPAY_REPEAT_MONTHLY, 'quarterly' => SECUREPAY_REPEAT_QUARTERLY, 'half_yearly' => SECUREPAY_REPEAT_HALF_YEARLY,
+				'daily' => SECUREPAY_REPEAT_DAILY,
+				'weekly' => SECUREPAY_REPEAT_WEEKLY,
+				'fortnightly' => SECUREPAY_REPEAT_FORTNIGHTLY,
+				'monthly' => SECUREPAY_REPEAT_MONTHLY,
+				'quarterly' => SECUREPAY_REPEAT_QUARTERLY,
+				'half_yearly' => SECUREPAY_REPEAT_HALF_YEARLY,
 				'yearly' => SECUREPAY_REPEAT_YEARLY
 			);
 			if (isset($translate[$when])) {
