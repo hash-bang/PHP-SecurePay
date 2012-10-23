@@ -192,12 +192,12 @@ class SecurePay {
 	public $LastMesageId;
 
 	/**
-	* Last Preauth ID requested
+	* Preauth ID if we are putting though a PreAuth payment (i.e. last call to Process() had $this->PreAuth == True)
 	* If a pre-auth is sent though before an actual transaction the preauth code is stored here to reserve the transaction for the next payment
 	* @access public
 	* @var string
 	*/
-	public $LastPreauthId;
+	public $PreAuthId;
 
 	/**
 	* The last dispatched request
@@ -376,6 +376,8 @@ class SecurePay {
 		if (isset($this->ResponseTree->Payment->TxnList->Txn->responseCode)) { // Has a response code
 			$this->ResponseCode = $this->ResponseTree->Payment->TxnList->Txn->responseCode;
 			$this->ResponseCodeText = $this->ResponseTree->Payment->TxnList->Txn->responseText;
+			if ($this->PreAuth) // Was requesting a PreAuth...
+				$this->PreAuthId = $this->ResponseTree->Payment->TxnList->Txn->preauthID; // Store the PreAuth return code in $this->PreAuth
 			$result = $this->_TranslateResponseCode($this->ResponseCode);
 		} else { // No success with the response code - return the server code error
 			$result = $server_code;
@@ -902,13 +904,15 @@ class SecurePay {
 			$message .= "\t\t\t\t<amount>$cents</amount>\n";
 			$message .= "\t\t\t\t<currency>{$this->ChargeCurrency}</currency>\n";
 			$message .= "\t\t\t\t<purchaseOrderNo>{$this->OrderId}</purchaseOrderNo>\n";
-			if (!$this->PreAuth && $this->LastPreauthId) // Processing a standard payment and the previous transaction reserved a PreAuth code
-				$message .= "\t\t\t\t<preauthID>{$this->LastPreauthId}</preauthID>\n";
+			if (!$this->PreAuth && $this->PreAuthId) // Processing a standard payment and the previous transaction reserved a PreAuth code
+				$message .= "\t\t\t\t<preauthID>{$this->PreAuthId}</preauthID>\n";
 			$message .= "\t\t\t\t<CreditCardInfo>\n";
-			$message .= "\t\t\t\t\t<cardNumber>{$this->Cc}</cardNumber>\n";
-			$message .= "\t\t\t\t\t<expiryDate>{$this->ExpiryDate}</expiryDate>\n";
-			if ($this->Cvv) // Provided with CVV/CV2 number
-				$message .= "\t\t\t\t\t<cvv>{$this->Cvv}</cvv>\n";
+			if (!$this->PreAuthId) { // Completing a preauth - dont need to send CC details again
+				$message .= "\t\t\t\t\t<cardNumber>{$this->Cc}</cardNumber>\n";
+				$message .= "\t\t\t\t\t<expiryDate>{$this->ExpiryDate}</expiryDate>\n";
+				if ($this->Cvv) // Provided with CVV/CV2 number
+					$message .= "\t\t\t\t\t<cvv>{$this->Cvv}</cvv>\n";
+			}
 			$message .= "\t\t\t\t</CreditCardInfo>\n";
 			$message .= "\t\t\t</Txn>\n";
 			$message .= "\t\t</TxnList>\n";
