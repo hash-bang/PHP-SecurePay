@@ -303,11 +303,11 @@ class SecurePay {
 	* @see Login()
 	* @return void
 	*/
-	function SecurePay($AccountName = null, $AccountPassword = null) {
+	function SecurePay($AccountName = null, $AccountPassword = null, $TestMode = FALSE) {
 		if ($AccountName && $AccountPassword)
 			$this->Login($AccountName, $AccountPassword);
 		$this->ChargeCurrency = 'USD'; // Default currency to USD
-		$this->TestMode = FALSE;
+		$this->TestMode = $TestMode;
 		$this->Repeat = SECUREPAY_REPEAT_NEVER;
 		$this->RepeatTrigger = TRUE;
 	}
@@ -758,7 +758,7 @@ class SecurePay {
 		if ($this->IsRepeat()) { // Periodic payment
 			$url = ($this->TestMode) ? 'https://www.securepay.com.au/test/periodic' : 'https://www.securepay.com.au/xmlapi/periodic';
 		} else // Once-off payment
-			$url = ($this->TestMode) ? 'https://www.securepay.com.au/test/payment' : 'https://www.securepay.com.au/xmlapi/payment';
+			$url = ($this->TestMode) ? 'https://test.securepay.com.au/xmlapi/payment' : 'https://api.securepay.com.au/xmlapi/payment';
 
 		curl_setopt($curl, CURLOPT_URL, $url);
 		curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE); // Follow redirects
