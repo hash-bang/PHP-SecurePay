@@ -410,7 +410,7 @@ class SecurePay {
 	* @return bool TRUE if the server connection and login information returned a correct result
 	*/
 	function TestConnection() {
-		$this->RequestXml = $this->_ComposeEcho()
+		$this->RequestXml = $this->_ComposeEcho();
 		$this->ResponseXml = $this->_Dispatch($this->ReponseXml);
 		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
 		return ($this->_TranslateServerCode($this->ResponseTree->Status->statusCode) == SECUREPAY_STATUS_OK);
