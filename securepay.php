@@ -900,12 +900,12 @@ class SecurePay {
 			$message .= "\t<Payment>\n";
 			$message .= "\t\t<TxnList count=\"1\">\n"; // In the current API this can only ever be 1
 			$message .= "\t\t\t<Txn ID=\"1\">\n"; // Likewise limited to 1
-			$message .= "\t\t\t\t<txnType>" . ($this->PreAuth ? '10' : '0') . "</txnType>\n"; // 0 = Standard payment, 10 = Pre-Auth
+			$message .= "\t\t\t\t<txnType>" . ($this->PreAuth ? ($this->PreAuthId ? '11' : '10') : '0') . "</txnType>\n"; // 0 = Standard payment, 10 = Pre-Auth, 11 - Charge Pre-Auth
 			$message .= "\t\t\t\t<txnSource>23</txnSource>\n"; // SecurePay API always demands the value 23
 			$message .= "\t\t\t\t<amount>$cents</amount>\n";
 			$message .= "\t\t\t\t<currency>{$this->ChargeCurrency}</currency>\n";
 			$message .= "\t\t\t\t<purchaseOrderNo>{$this->OrderId}</purchaseOrderNo>\n";
-			if (!$this->PreAuth && $this->PreAuthId) // Processing a standard payment and the previous transaction reserved a PreAuth code
+			if ($this->PreAuthId) // Processing a standard payment and the previous transaction reserved a PreAuth code
 				$message .= "\t\t\t\t<preauthID>{$this->PreAuthId}</preauthID>\n";
 			$message .= "\t\t\t\t<CreditCardInfo>\n";
 			if (!$this->PreAuthId) { // Completing a preauth - dont need to send CC details again
