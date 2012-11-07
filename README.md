@@ -138,8 +138,8 @@ OR
 	$preauthid = $sp->PreAuthId; // $preauthid contains the ID used by SecurePay (use this when finalizing a PreAuth)
 
 
-Charge a setup PreAuth payment
-------------------------------
+Charge a PreAuth payment
+------------------------
 	$sp->PreAuth = 1;
 	$sp->PreAuthID = $preauthid; // The ID we got in the above process
 	$sp->ChargeAmount = 123;
