@@ -150,7 +150,7 @@ class SecurePay {
 
 	/**
 	* The Credit Card Verification number / CV2
-	* This is optional but helps most transactions
+	* This is optional as to whether the card type supports it
 	* @var char(3)
 	* @access public
 	*/
@@ -352,8 +352,9 @@ class SecurePay {
 	* @param string $ChargeCurrency Optional currency that the above $ChargeAmount is specified in (e.g. 'USD')
 	* @param string $Cc Optional Credit Card number to use
 	* @param string $ExpiryDate Optional expiry date of the Credit Card (e.g. '07/09' => 'July 2009')
-	* @param string $InvoiceId Optional local invoice ID reference to use for this transaction. This must be unique
-	* @param bool $PreAuth Option value to indicate that this transaction is a preauth
+	* @param string $Cvv Optional CVV code (if the card has one)
+	* @param string $OrderId Optional local order ID reference to use for this transaction. This must be unique
+	* @param bool $PreAuth Indicate that this transaction is a preauth
 	* @return int Returns the corresponding SECUREPAY_STATUS_* code
 	*/
 	function Process($ChargeAmount = null, $ChargeCurrency = null, $Cc = null, $ExpiryDate = null, $Cvv = null, $OrderId = null, $PreAuth = FALSE) {
@@ -367,7 +368,8 @@ class SecurePay {
 		if ($PreAuth) $this->PreAuth = $PreAuth;
 		// }}}
 		$this->ValidExpiryDate(); // Reformat the expiry date if necessary
-		$this->Cvv = str_pad($this->Cvv, 3, '0', STR_PAD_LEFT);
+		if ($this->Cc)
+			$this->Cvv = str_pad($this->Cvv, 3, '0', STR_PAD_LEFT);
 		$this->RequestXml = $this->_ComposePayment();
 		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
 		$this->ResponseTree = simplexml_load_string($this->ResponseXml);

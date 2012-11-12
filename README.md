@@ -232,3 +232,8 @@ OR for any date range:
 
 	$sp->WebLogin('username','admin','password');
 	print_r($sp->GetTransactions(strtotime('1/1/2008'), strtotime('30/1/2008'))); // Retrieves all transactions between 1/1/2008 and 30/1/2008
+
+
+Thanks
+======
+Thanks to Chris Bosdriesz for pointing out that CVV is optional with some cards.
