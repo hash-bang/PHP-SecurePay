@@ -807,8 +807,12 @@ class SecurePay {
 	*/
 	function _ComposeTrigger() {
 		$this->LastMessageId = $this->_GetMessageId();
-		$password = ($this->TestMode && $this->TestAccountPassword) ? $this->TestAccountPassword : $this->AccountPassword;
-		$message = "<SecurePayMessage>\n";
+        $cents = intval($this->ChargeAmount * 100); // Convert to cents
+        $timestamp = date('YdmHis000+Z'); // See Appendix E of the SecureXML standard for more details on this date format
+        $message = "<?xml version=\"1.0\" encoding=\"UTF-8\"?" . ">\n";
+        $password = ($this->TestMode && $this->TestAccountPassword) ? $this->TestAccountPassword : $this->AccountPassword;
+
+		$message .= "<SecurePayMessage>\n";
 		$message .= "\t<MessageInfo>\n";
 		$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
 		$message .= "\t\t<messageTimestamp>$timestamp</messageTimestamp>\n";
