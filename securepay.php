@@ -382,6 +382,14 @@ class SecurePay {
 			if ($this->PreAuth) // Was requesting a PreAuth...
 				$this->PreAuthId = $this->ResponseTree->Payment->TxnList->Txn->preauthID; // Store the PreAuth return code in $this->PreAuth
 			$result = $this->_TranslateResponseCode($this->ResponseCode);
+
+        } else if(isset($this->ResponseTree->Periodic->PeriodicList->PeriodicItem->responseCode)) { // Has a response code - periodic style
+            $this->ResponseCode = $this->ResponseTree->Periodic->PeriodicList->PeriodicItem->responseCode;
+            $this->ResponseCodeText = $this->ResponseTree->Periodic->PeriodicList->PeriodicItem->responseText;
+            if ($this->PreAuth) // Was requesting a PreAuth...
+                $this->PreAuthId = $this->ResponseTree->Payment->TxnList->Txn->preauthID; // Store the PreAuth return code in $this->PreAuth
+            $result = $this->_TranslateResponseCode($this->ResponseCode);
+
 		} else { // No success with the response code - return the server code error
 			$result = $server_code;
 		}
