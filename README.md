@@ -1,4 +1,4 @@
-Very simple [SecurePay.com](http://www.securepay.com/) API for PHP.
+Very simple [SecurePay.com.au](http://www.securepay.com.au) API for PHP.
 
 The secure pay service is a reasonably reliable and well documented credit card gateway.
 
