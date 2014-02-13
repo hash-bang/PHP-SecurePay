@@ -207,6 +207,16 @@ Setup a repeating payment with a manual trigger
 	$sp->Trigger(); // Now start it
 
 
+Refund a Transaction
+--------------------
+	//We are assuming that we have previously charged a credit card with the OrderId `ABC123` and the TransactionId was `123456`
+	$sp->TransactionId = 123456;
+	$sp->ChargeAmount = 123; //Must be less or equal to the transaction amount
+	$sp->OrderId = 'ABC123'; //Must be the same as the original transaction
+
+	$sp->Refund(); //Refund it!
+
+
 Retrieve all client information
 -------------------------------
 	$sp->WebLogin('username','admin','password'); // Web login details
