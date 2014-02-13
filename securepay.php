@@ -200,6 +200,15 @@ class SecurePay {
 	public $PreAuthId;
 
 	/**
+	 * Last Transaction ID if successful
+	 * If a transaction is successful, the transaction ID will be stored here for you to easily retrieve
+	 * @access public
+	 * @var int
+	 * @since 2014-02-13
+	 */
+	public $TransactionId;
+
+	/**
 	* The last dispatched request
 	* @access public
 	* @var string
@@ -382,6 +391,8 @@ class SecurePay {
 			if ($this->PreAuth) // Was requesting a PreAuth...
 				$this->PreAuthId = $this->ResponseTree->Payment->TxnList->Txn->preauthID; // Store the PreAuth return code in $this->PreAuth
 			$result = $this->_TranslateResponseCode($this->ResponseCode);
+			if ($result == SECUREPAY_STATUS_APPROVED && !empty($this->ResponseTree->Payment->TxnList->Txn->txnID))
+            	$this->TransactionId = (string) $this->ResponseTree->Payment->TxnList->Txn->txnID;
 
         } else if(isset($this->ResponseTree->Periodic->PeriodicList->PeriodicItem->responseCode)) { // Has a response code - periodic style
             $this->ResponseCode = $this->ResponseTree->Periodic->PeriodicList->PeriodicItem->responseCode;
