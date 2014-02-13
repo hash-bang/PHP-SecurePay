@@ -200,6 +200,15 @@ class SecurePay {
 	public $PreAuthId;
 
 	/**
+	 * Last Transaction ID if successful
+	 * If a transaction is successful, the transaction ID will be stored here for you to easily retrieve
+	 * @access public
+	 * @var int
+	 * @since 2014-02-13
+	 */
+	public $TransactionId;
+
+	/**
 	* The last dispatched request
 	* @access public
 	* @var string
@@ -382,6 +391,8 @@ class SecurePay {
 			if ($this->PreAuth) // Was requesting a PreAuth...
 				$this->PreAuthId = $this->ResponseTree->Payment->TxnList->Txn->preauthID; // Store the PreAuth return code in $this->PreAuth
 			$result = $this->_TranslateResponseCode($this->ResponseCode);
+			if ($result == SECUREPAY_STATUS_APPROVED && !empty($this->ResponseTree->Payment->TxnList->Txn->txnID))
+            	$this->TransactionId = (string) $this->ResponseTree->Payment->TxnList->Txn->txnID;
 
         } else if(isset($this->ResponseTree->Periodic->PeriodicList->PeriodicItem->responseCode)) { // Has a response code - periodic style
             $this->ResponseCode = $this->ResponseTree->Periodic->PeriodicList->PeriodicItem->responseCode;
@@ -395,6 +406,45 @@ class SecurePay {
 		}
 		if ($this->IsRepeat() && $this->RepeatTrigger) // Automatically trigger the response
 			$this->Trigger();
+		return $this->Status = $result;
+	}
+
+	/**
+	 * Refunds a Transaction on Secure Pay
+	 * If any field is supplied it overrides the existing model function if not or no parameters are specified the transaction is just dispatched
+	 * @param string $TransactionId The TransactionId as provided by SecurePay
+	 * @param string $OrderId       The order ID you have this transaction. Must match the original transaction
+	 * @param float  $ChargeAmount  The amount to refund, up-to the total original transaction amount
+	 * @return int 	 Returns the corresponding SECUREPAY_STATUS_* code
+	 * @author Phil Hawthorne <me@philhawthorne.com>
+	 * @since  2014-02-13
+	 */
+	function Refund($TransactionId = null,$OrderId = null,$ChargeAmount=null){
+		// Set class variables from function call for later use {{{
+		if ($TransactionId) $this->TransactionId = $TransactionId;
+		if ($ChargeAmount) $this->ChargeAmount = $ChargeAmount;
+		if ($OrderId) $this->OrderId = $OrderId;
+		// }}}
+		
+		$this->RequestXml = $this->_ComposeRefund();
+		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
+		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
+		$this->StatusCode = $this->ResponseTree->Status->statusCode;
+		$this->StatusCodeText = $this->ResponseTree->Status->statusDescription;
+		$server_code = $this->_TranslateServerCode($this->StatusCode);
+		if (isset($this->ResponseTree->Payment->TxnList->Txn->responseCode)) { // Has a response code
+			$this->ResponseCode = $this->ResponseTree->Payment->TxnList->Txn->responseCode;
+			$this->ResponseCodeText = $this->ResponseTree->Payment->TxnList->Txn->responseText;
+			if ($this->PreAuth) // Was requesting a PreAuth...
+				$this->PreAuthId = $this->ResponseTree->Payment->TxnList->Txn->preauthID; // Store the PreAuth return code in $this->PreAuth
+			$result = $this->_TranslateResponseCode($this->ResponseCode);
+			if ($result == SECUREPAY_STATUS_APPROVED && !empty($this->ResponseTree->Payment->TxnList->Txn->txnID))
+            	$this->TransactionId = (string) $this->ResponseTree->Payment->TxnList->Txn->txnID;
+
+        } else { // No success with the response code - return the server code error
+			$result = $server_code;
+		}
+
 		return $this->Status = $result;
 	}
 
@@ -934,6 +984,53 @@ class SecurePay {
 			$message .= "\t</Payment>\n";
 			$message .= "</SecurePayMessage>";
 		}
+		return $message;
+	}
+
+	/**
+	* Creates the XML request for a SecurePay Refund Echo
+	* Similar to {@see _ComposePayment}, except it also requires a transaction ID
+	* @return string The XML string for a SecurePay Echo request
+	* @access private
+	* @author Phil Hawthorne <me@philhawthorne.com>
+	* @since  2014-02-13
+	*/
+	function _ComposeRefund() {
+		$this->LastMessageId = $this->_GetMessageId();
+		$cents = intval($this->ChargeAmount * 100); // Convert to cents
+		$timestamp = date('YdmHis000+Z'); // See Appendix E of the SecureXML standard for more details on this date format
+		$message = "<?xml version=\"1.0\" encoding=\"UTF-8\"?" . ">\n";
+		$password = ($this->TestMode && $this->TestAccountPassword) ? $this->TestAccountPassword : $this->AccountPassword;
+		
+		$message .= "<SecurePayMessage>\n";
+		$message .= "\t<MessageInfo>\n";
+		$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
+		$message .= "\t\t<messageTimestamp>$timestamp</messageTimestamp>\n";
+		$message .= "\t\t<timeoutValue>60</timeoutValue>\n";
+		$message .= "\t\t<apiVersion>xml-4.2</apiVersion>\n";
+		$message .= "\t</MessageInfo>\n";
+		$message .= "\t<MerchantInfo>\n";
+		$message .= "\t\t<merchantID>{$this->AccountName}</merchantID>\n";
+		$message .= "\t\t<password>{$password}</password>\n";
+		$message .= "\t</MerchantInfo>\n";
+		$message .= "\t<RequestType>Payment</RequestType>\n";
+		$message .= "\t<Payment>\n";
+		$message .= "\t\t<TxnList count=\"1\">\n"; // In the current API this can only ever be 1
+		$message .= "\t\t\t<Txn ID=\"1\">\n"; // Likewise limited to 1
+		$message .= "\t\t\t\t<txnType>4</txnType>\n"; // 0 = Standard payment, 10 = Pre-Auth, 11 - Charge Pre-Auth
+		$message .= "\t\t\t\t<txnSource>23</txnSource>\n"; // SecurePay API always demands the value 23
+		$message .= "\t\t\t\t<amount>$cents</amount>\n";
+		$message .= "\t\t\t\t<currency>{$this->ChargeCurrency}</currency>\n";
+		$message .= "\t\t\t\t<purchaseOrderNo>{$this->OrderId}</purchaseOrderNo>\n";
+		$message .= "\t\t\t\t<txnID>{$this->TransactionId}</txnID>\n";
+		if ($this->PreAuthId) // Processing a standard payment and the previous transaction reserved a PreAuth code
+			$message .= "\t\t\t\t<preauthID>{$this->PreAuthId}</preauthID>\n";
+
+		$message .= "\t\t\t</Txn>\n";
+		$message .= "\t\t</TxnList>\n";
+		$message .= "\t</Payment>\n";
+		$message .= "</SecurePayMessage>";
+		
 		return $message;
 	}
 
