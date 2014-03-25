@@ -1,7 +1,7 @@
 {
 	"name": "hashbang/securepay",
 	"description": "PHP SecurePay API",
-	"keywords": ["forms", "validation"],
+	"keywords": ["payment", "creditcard", "securepay", "cc"],
 	"homepage": "https://github.com/hash-bang/PHP-SecurePay",
 	"type": "library",
 	"license": "MIT",
