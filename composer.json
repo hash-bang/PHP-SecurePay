@@ -22,6 +22,6 @@
 	"config": {
 	},
 	"autoload": {
-		"files": ["lib/securepay.php"]
+		"files": ["securepay.php"]
 	}
 }
