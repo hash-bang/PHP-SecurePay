@@ -349,7 +349,7 @@ class SecurePay {
 	* Enable or disable the testing suite
 	* When TestMode is enabled all functionality uses the test SecureXML API servers instead
 	* @param bool $TestMode Optional indicator as to whether test mode is enabled or not. If omitted TestMode is enabled
-	*/ 
+	*/
 	function TestMode($TestMode = TRUE) {
 		$this->TestMode = $TestMode;
 	}
@@ -425,7 +425,7 @@ class SecurePay {
 		if ($ChargeAmount) $this->ChargeAmount = $ChargeAmount;
 		if ($OrderId) $this->OrderId = $OrderId;
 		// }}}
-		
+
 		$this->RequestXml = $this->_ComposeRefund();
 		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
 		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
@@ -865,7 +865,7 @@ class SecurePay {
 	*/
 	function _ComposeTrigger() {
 		$this->LastMessageId = $this->_GetMessageId();
-        $cents = intval($this->ChargeAmount * 100); // Convert to cents
+        $cents = round($this->ChargeAmount * 100); // Convert to cents
         $timestamp = date('YdmHis000+Z'); // See Appendix E of the SecureXML standard for more details on this date format
         $message = "<?xml version=\"1.0\" encoding=\"UTF-8\"?" . ">\n";
         $password = ($this->TestMode && $this->TestAccountPassword) ? $this->TestAccountPassword : $this->AccountPassword;
@@ -903,7 +903,7 @@ class SecurePay {
 	*/
 	function _ComposePayment() {
 		$this->LastMessageId = $this->_GetMessageId();
-		$cents = intval($this->ChargeAmount * 100); // Convert to cents
+		$cents = round($this->ChargeAmount * 100); // Convert to cents
 		$timestamp = date('YdmHis000+Z'); // See Appendix E of the SecureXML standard for more details on this date format
 		$message = "<?xml version=\"1.0\" encoding=\"UTF-8\"?" . ">\n";
 		$password = ($this->TestMode && $this->TestAccountPassword) ? $this->TestAccountPassword : $this->AccountPassword;
@@ -997,11 +997,11 @@ class SecurePay {
 	*/
 	function _ComposeRefund() {
 		$this->LastMessageId = $this->_GetMessageId();
-		$cents = intval($this->ChargeAmount * 100); // Convert to cents
+		$cents = round($this->ChargeAmount * 100); // Convert to cents
 		$timestamp = date('YdmHis000+Z'); // See Appendix E of the SecureXML standard for more details on this date format
 		$message = "<?xml version=\"1.0\" encoding=\"UTF-8\"?" . ">\n";
 		$password = ($this->TestMode && $this->TestAccountPassword) ? $this->TestAccountPassword : $this->AccountPassword;
-		
+
 		$message .= "<SecurePayMessage>\n";
 		$message .= "\t<MessageInfo>\n";
 		$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
@@ -1030,7 +1030,7 @@ class SecurePay {
 		$message .= "\t\t</TxnList>\n";
 		$message .= "\t</Payment>\n";
 		$message .= "</SecurePayMessage>";
-		
+
 		return $message;
 	}
 
