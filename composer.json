@@ -1,0 +1,27 @@
+{
+	"name": "hashbang/securepay",
+	"description": "PHP SecurePay API",
+	"keywords": ["forms", "validation"],
+	"homepage": "https://github.com/hash-bang/PHP-SecurePay",
+	"type": "library",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Matt Carter",
+			"email": "m@ttcarter.com",
+			"homepage": "https://github.com/hash-bang"
+		}
+	],
+	"require": {
+		"php": ">=5.0.0"
+	},
+	"require-dev": {
+	},
+	"suggest": {
+	},
+	"config": {
+	},
+	"autoload": {
+		"files": ["lib/securepay.php"]
+	}
+}
