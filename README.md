@@ -4,6 +4,14 @@ The secure pay service is a reasonably reliable and well documented credit card 
 
 You will require an existing username and password (or a test account) to use this module.
 
+
+Installation
+============
+Download this GIT repository and copy into your application directory.
+
+Alternatively, install with [Composer](http://getcomposer.org).
+
+
 Examples
 ========
 
