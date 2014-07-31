@@ -827,6 +827,11 @@ class SecurePay {
 		curl_setopt($curl, CURLOPT_POSTFIELDS, $xml);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE); // Return the HTTP response from the curl_exec function
 
+		// Switch to SSLv3 due to the OpenSSL fiasco
+		// thanks to cleathley for pointing this out - https://github.com/hash-bang/PHP-SecurePay/issues/6
+		curl_setopt($curl, CURLOPT_SSLVERSION, 3);
+		curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'SSLv3');
+
 		$response = curl_exec($curl);
 		curl_close($curl);
 		return $response;
