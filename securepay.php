@@ -658,7 +658,7 @@ class SecurePay {
 				$matches[2] = substr($matches[2],-2);
 			$this->ExpiryDate = "{$matches[1]}/{$matches[2]}";
 
-			return ( ($matches[1] > 0) && ($matches[1] < 13) && ($matches[2] >= date('y')) && ($matches[1] < date('y') + 30) ); // Check that month and years are valid
+			return ( ($matches[1] > 0) && ($matches[1] < 13) && ($matches[2] >= date('y')) && ($matches[2] < date('y') + 30) ); // Check that month and years are valid
 		} else {
 			$this->Error = 'Invalid Expiry Date';
 			return FALSE; // Failed RegExp checks
