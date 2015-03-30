@@ -827,11 +827,15 @@ class SecurePay {
 		curl_setopt($curl, CURLOPT_POSTFIELDS, $xml);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE); // Return the HTTP response from the curl_exec function
 
-		// Switch to SSLv3 due to the OpenSSL + Poodle fiascos
-		// thanks to cleathley for pointing this out and to beitsafedaniel for fixing the fix
-		// @url https://github.com/hash-bang/PHP-SecurePay/issues/6
-		curl_setopt($curl, CURLOPT_SSLVERSION, 4);
-		curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'TLSv1');
+		if (defined('CURL_SSLVERSION_TLSv1')) { // TLSv1 supported
+			curl_setopt($curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
+		} else if (defined('CURLOPT_SSLVERSION') && defined('CURLOPT_SSL_CIPHER_LIST')) {
+			// Switch to SSLv3 due to the OpenSSL + Poodle fiascos
+			// thanks to cleathley for pointing this out and to beitsafedaniel for fixing the fix
+			// @url https://github.com/hash-bang/PHP-SecurePay/issues/6
+			curl_setopt($curl, CURLOPT_SSLVERSION, 4);
+			curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'TLSv1');
+		} // else - rely on PHP figuring out the best option for CURLOPT_SSLVERSION as per note at http://php.net/manual/en/function.curl-setopt.php
 
 		$response = curl_exec($curl);
 		curl_close($curl);
