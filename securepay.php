@@ -817,7 +817,7 @@ class SecurePay {
 			trigger_error('You do not have Curl installed on this server', E_USER_ERROR);
 		$curl = curl_init();
 		if ($this->IsRepeat()) { // Periodic payment
-			$url = ($this->TestMode) ? 'https://www.securepay.com.au/test/periodic' : 'https://www.securepay.com.au/xmlapi/periodic';
+			$url = ($this->TestMode) ? 'https://test.securepay.com.au/xmlapi/periodic' : 'https://api.securepay.com.au/xmlapi/periodic';
 		} else // Once-off payment
 			$url = ($this->TestMode) ? 'https://test.securepay.com.au/xmlapi/payment' : 'https://api.securepay.com.au/xmlapi/payment';
 
