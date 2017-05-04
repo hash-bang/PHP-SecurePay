@@ -312,7 +312,7 @@ class SecurePay {
 	* @see Login()
 	* @return void
 	*/
-	function SecurePay($AccountName = null, $AccountPassword = null, $TestMode = FALSE) {
+	function __construct($AccountName = null, $AccountPassword = null, $TestMode = FALSE) {
 		if ($AccountName && $AccountPassword)
 			$this->Login($AccountName, $AccountPassword, $TestMode);
 		$this->ChargeCurrency = 'USD'; // Default currency to USD
