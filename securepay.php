@@ -489,6 +489,8 @@ class SecurePay {
 			return TRUE;
 		if (!function_exists('curl_init'))
 			trigger_error('You do not have Curl installed on this server', E_ERROR);
+		if (!function_exists('simplexml_load_string'))
+			trigger_error('You do not have an XML parser installed on this server', E_ERROR);
 		$tempdir = (function_exists('sys_get_temp_dir')) ? sys_get_temp_dir() : '/tmp'; // Attempt to figure out a temporary directory
 		$this->WebCookieJar = tempnam('/tmp', 'securepay-cookie-jar-');
 		touch($this->WebCookieJar);
