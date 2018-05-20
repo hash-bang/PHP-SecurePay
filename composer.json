@@ -1,5 +1,6 @@
 {
 	"name": "hashbang/securepay",
+	"version": "1.0.2",
 	"description": "PHP SecurePay API",
 	"keywords": ["payment", "creditcard", "securepay", "cc"],
 	"homepage": "https://github.com/hash-bang/PHP-SecurePay",
