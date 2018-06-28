@@ -302,6 +302,15 @@ class SecurePay {
 	*/
 	public $RepeatTrigger;
 
+	/**
+	* Maximum number of seconds a processing request is allowed to take
+	* The default is 60 seconds
+	*
+	* @access public
+	* @var integer
+	*/
+	public $Timeout;
+
 	// End of Variable Declarations }}}
 
 	// General use functionality {{{
@@ -318,6 +327,7 @@ class SecurePay {
 		$this->ChargeCurrency = 'USD'; // Default currency to USD
 		$this->Repeat = SECUREPAY_REPEAT_NEVER;
 		$this->RepeatTrigger = TRUE;
+		$this->Timeout = 60;
 	}
 
 	/**
@@ -828,6 +838,7 @@ class SecurePay {
 		curl_setopt($curl, CURLOPT_POST, TRUE);
 		curl_setopt($curl, CURLOPT_POSTFIELDS, $xml);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE); // Return the HTTP response from the curl_exec function
+		curl_setopt($curl, CURLOPT_TIMEOUT, $this->Timeout);
 		if (defined('CURL_SSLVERSION_TLSv1_2')) {
 			//Always use TLS v1.2 if its available.
       			curl_setopt($curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
@@ -860,7 +871,7 @@ class SecurePay {
 		$message .= "\t<MessageInfo>\n";
 		$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
 		$message .= "\t\t<messageTimestamp>$timestamp</messageTimestamp>\n";
-		$message .= "\t\t<timeoutValue>60</timeoutValue>\n";
+		$message .= "\t\t<timeoutValue>{$this->Timeout}</timeoutValue>\n";
 		$message .= "\t\t<apiVersion>xml-4.2</apiVersion>\n";
 		$message .= "\t</MessageInfo>\n";
 		$message .= "\t<MerchantInfo>\n";
@@ -888,7 +899,7 @@ class SecurePay {
 		$message .= "\t<MessageInfo>\n";
 		$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
 		$message .= "\t\t<messageTimestamp>$timestamp</messageTimestamp>\n";
-		$message .= "\t\t<timeoutValue>60</timeoutValue>\n";
+		$message .= "\t\t<timeoutValue>{$this->Timeout}</timeoutValue>\n";
 		$message .= "\t\t<apiVersion>spxml-3.0</apiVersion>\n";
 		$message .= "\t</MessageInfo>\n";
 		$message .= "\t<MerchantInfo>\n";
@@ -927,7 +938,7 @@ class SecurePay {
 			$message .= "\t<MessageInfo>\n";
 			$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
 			$message .= "\t\t<messageTimestamp>$timestamp</messageTimestamp>\n";
-			$message .= "\t\t<timeoutValue>60</timeoutValue>\n";
+			$message .= "\t\t<timeoutValue>{$this->Timeout}</timeoutValue>\n";
 			$message .= "\t\t<apiVersion>spxml-3.0</apiVersion>\n";
 			$message .= "\t</MessageInfo>\n";
 			$message .= "\t<MerchantInfo>\n";
@@ -967,7 +978,7 @@ class SecurePay {
 			$message .= "\t<MessageInfo>\n";
 			$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
 			$message .= "\t\t<messageTimestamp>$timestamp</messageTimestamp>\n";
-			$message .= "\t\t<timeoutValue>60</timeoutValue>\n";
+			$message .= "\t\t<timeoutValue>{$this->Timeout}</timeoutValue>\n";
 			$message .= "\t\t<apiVersion>xml-4.2</apiVersion>\n";
 			$message .= "\t</MessageInfo>\n";
 			$message .= "\t<MerchantInfo>\n";
@@ -1020,7 +1031,7 @@ class SecurePay {
 		$message .= "\t<MessageInfo>\n";
 		$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
 		$message .= "\t\t<messageTimestamp>$timestamp</messageTimestamp>\n";
-		$message .= "\t\t<timeoutValue>60</timeoutValue>\n";
+		$message .= "\t\t<timeoutValue>{$this->Timeout}</timeoutValue>\n";
 		$message .= "\t\t<apiVersion>xml-4.2</apiVersion>\n";
 		$message .= "\t</MessageInfo>\n";
 		$message .= "\t<MerchantInfo>\n";
