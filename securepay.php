@@ -391,6 +391,12 @@ class SecurePay {
 			$this->Cvv = str_pad($this->Cvv, 3, '0', STR_PAD_LEFT);
 		$this->RequestXml = $this->_ComposePayment();
 		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
+
+		// If no XML response, assume processing timed out.
+		if ((false === $this->ResponseXml) || (false == is_string($this->ResponseXml))) {
+			return $this->_TranslateServerCode(512);
+		}
+
 		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
 		$this->StatusCode = $this->ResponseTree->Status->statusCode;
 		$this->StatusCodeText = $this->ResponseTree->Status->statusDescription;
@@ -438,6 +444,12 @@ class SecurePay {
 
 		$this->RequestXml = $this->_ComposeRefund();
 		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
+		
+		// If no XML response, assume processing timed out.
+		if ((false === $this->ResponseXml) || (false == is_string($this->ResponseXml))) {
+			return $this->_TranslateServerCode(512);
+		}
+
 		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
 		$this->StatusCode = $this->ResponseTree->Status->statusCode;
 		$this->StatusCodeText = $this->ResponseTree->Status->statusDescription;
@@ -469,6 +481,12 @@ class SecurePay {
 		if ($OrderId) $this->OrderId = $OrderId;
 		$this->RequestXml = $this->_ComposeTrigger();
 		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
+
+		// If no XML response, assume processing timed out.
+		if ((false === $this->ResponseXml) || (false == is_string($this->ResponseXml))) {
+			return $this->_TranslateServerCode(512);
+		}
+
 		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
 		$server_code = $this->_TranslateServerCode($this->ResponseTree->Status->statusCode);
 		if (isset($this->ResponseTree->Payment->TxnList->Txn->responseCode)) { // Has a response code
@@ -485,6 +503,14 @@ class SecurePay {
 	function TestConnection() {
 		$this->RequestXml = $this->_ComposeEcho();
 		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
+
+		// If no XML response, assume processing timed out.
+		if ((false === $this->ResponseXml) || (false == is_string($this->ResponseXml))) {
+			$this->_TranslateServerCode(512);
+			
+			return false;
+		}
+
 		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
 		return ($this->_TranslateServerCode($this->ResponseTree->Status->statusCode) == SECUREPAY_STATUS_OK);
 	}
