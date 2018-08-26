@@ -302,6 +302,15 @@ class SecurePay {
 	*/
 	public $RepeatTrigger;
 
+	/**
+	* Maximum number of seconds a processing request is allowed to take
+	* The default is 60 seconds
+	*
+	* @access public
+	* @var integer
+	*/
+	public $Timeout;
+
 	// End of Variable Declarations }}}
 
 	// General use functionality {{{
@@ -318,6 +327,7 @@ class SecurePay {
 		$this->ChargeCurrency = 'USD'; // Default currency to USD
 		$this->Repeat = SECUREPAY_REPEAT_NEVER;
 		$this->RepeatTrigger = TRUE;
+		$this->Timeout = 60;
 	}
 
 	/**
@@ -381,6 +391,12 @@ class SecurePay {
 			$this->Cvv = str_pad($this->Cvv, 3, '0', STR_PAD_LEFT);
 		$this->RequestXml = $this->_ComposePayment();
 		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
+
+		// If no XML response, assume processing timed out.
+		if ((false === $this->ResponseXml) || (false == is_string($this->ResponseXml))) {
+			return $this->_TranslateServerCode(512);
+		}
+
 		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
 		$this->StatusCode = $this->ResponseTree->Status->statusCode;
 		$this->StatusCodeText = $this->ResponseTree->Status->statusDescription;
@@ -428,6 +444,12 @@ class SecurePay {
 
 		$this->RequestXml = $this->_ComposeRefund();
 		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
+		
+		// If no XML response, assume processing timed out.
+		if ((false === $this->ResponseXml) || (false == is_string($this->ResponseXml))) {
+			return $this->_TranslateServerCode(512);
+		}
+
 		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
 		$this->StatusCode = $this->ResponseTree->Status->statusCode;
 		$this->StatusCodeText = $this->ResponseTree->Status->statusDescription;
@@ -459,6 +481,12 @@ class SecurePay {
 		if ($OrderId) $this->OrderId = $OrderId;
 		$this->RequestXml = $this->_ComposeTrigger();
 		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
+
+		// If no XML response, assume processing timed out.
+		if ((false === $this->ResponseXml) || (false == is_string($this->ResponseXml))) {
+			return $this->_TranslateServerCode(512);
+		}
+
 		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
 		$server_code = $this->_TranslateServerCode($this->ResponseTree->Status->statusCode);
 		if (isset($this->ResponseTree->Payment->TxnList->Txn->responseCode)) { // Has a response code
@@ -475,6 +503,14 @@ class SecurePay {
 	function TestConnection() {
 		$this->RequestXml = $this->_ComposeEcho();
 		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
+
+		// If no XML response, assume processing timed out.
+		if ((false === $this->ResponseXml) || (false == is_string($this->ResponseXml))) {
+			$this->_TranslateServerCode(512);
+			
+			return false;
+		}
+
 		$this->ResponseTree = simplexml_load_string($this->ResponseXml);
 		return ($this->_TranslateServerCode($this->ResponseTree->Status->statusCode) == SECUREPAY_STATUS_OK);
 	}
@@ -828,6 +864,7 @@ class SecurePay {
 		curl_setopt($curl, CURLOPT_POST, TRUE);
 		curl_setopt($curl, CURLOPT_POSTFIELDS, $xml);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE); // Return the HTTP response from the curl_exec function
+		curl_setopt($curl, CURLOPT_TIMEOUT, $this->Timeout);
 		if (defined('CURL_SSLVERSION_TLSv1_2')) {
 			//Always use TLS v1.2 if its available.
       			curl_setopt($curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
@@ -860,7 +897,7 @@ class SecurePay {
 		$message .= "\t<MessageInfo>\n";
 		$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
 		$message .= "\t\t<messageTimestamp>$timestamp</messageTimestamp>\n";
-		$message .= "\t\t<timeoutValue>60</timeoutValue>\n";
+		$message .= "\t\t<timeoutValue>{$this->Timeout}</timeoutValue>\n";
 		$message .= "\t\t<apiVersion>xml-4.2</apiVersion>\n";
 		$message .= "\t</MessageInfo>\n";
 		$message .= "\t<MerchantInfo>\n";
@@ -888,7 +925,7 @@ class SecurePay {
 		$message .= "\t<MessageInfo>\n";
 		$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
 		$message .= "\t\t<messageTimestamp>$timestamp</messageTimestamp>\n";
-		$message .= "\t\t<timeoutValue>60</timeoutValue>\n";
+		$message .= "\t\t<timeoutValue>{$this->Timeout}</timeoutValue>\n";
 		$message .= "\t\t<apiVersion>spxml-3.0</apiVersion>\n";
 		$message .= "\t</MessageInfo>\n";
 		$message .= "\t<MerchantInfo>\n";
@@ -927,7 +964,7 @@ class SecurePay {
 			$message .= "\t<MessageInfo>\n";
 			$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
 			$message .= "\t\t<messageTimestamp>$timestamp</messageTimestamp>\n";
-			$message .= "\t\t<timeoutValue>60</timeoutValue>\n";
+			$message .= "\t\t<timeoutValue>{$this->Timeout}</timeoutValue>\n";
 			$message .= "\t\t<apiVersion>spxml-3.0</apiVersion>\n";
 			$message .= "\t</MessageInfo>\n";
 			$message .= "\t<MerchantInfo>\n";
@@ -967,7 +1004,7 @@ class SecurePay {
 			$message .= "\t<MessageInfo>\n";
 			$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
 			$message .= "\t\t<messageTimestamp>$timestamp</messageTimestamp>\n";
-			$message .= "\t\t<timeoutValue>60</timeoutValue>\n";
+			$message .= "\t\t<timeoutValue>{$this->Timeout}</timeoutValue>\n";
 			$message .= "\t\t<apiVersion>xml-4.2</apiVersion>\n";
 			$message .= "\t</MessageInfo>\n";
 			$message .= "\t<MerchantInfo>\n";
@@ -1020,7 +1057,7 @@ class SecurePay {
 		$message .= "\t<MessageInfo>\n";
 		$message .= "\t\t<messageID>{$this->LastMessageId}</messageID>\n";
 		$message .= "\t\t<messageTimestamp>$timestamp</messageTimestamp>\n";
-		$message .= "\t\t<timeoutValue>60</timeoutValue>\n";
+		$message .= "\t\t<timeoutValue>{$this->Timeout}</timeoutValue>\n";
 		$message .= "\t\t<apiVersion>xml-4.2</apiVersion>\n";
 		$message .= "\t</MessageInfo>\n";
 		$message .= "\t<MerchantInfo>\n";
