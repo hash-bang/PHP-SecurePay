@@ -26,6 +26,7 @@ Full Example
 	$sp->TestConnection();
 	print_r($sp->ResponseXml);
 
+	$sp->NameOnCard = 'John Citizen'; // optional
 	$sp->Cc = 462834666666;
 	$sp->ExpiryDate = '07/09';
 	$sp->ChargeAmount = 123;
@@ -57,7 +58,7 @@ Obviously we need to load the library first:
 Create a new SecurePay object
 -------------------------------------------
 	$sp = new SecurePay('username','password');
-	
+
 OR
 
 	$sp = new SecurePay();
