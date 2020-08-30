@@ -134,6 +134,13 @@ class SecurePay {
 	public $PreAuth;
 
 	/**
+	* Credit card holder name in credit card
+	* @access public
+	* @var string
+	*/
+	public $NameOnCard;
+
+	/**
 	* The credit card number to work with
 	* @access public
 	* @var int|string
@@ -376,10 +383,11 @@ class SecurePay {
 	* @param bool $PreAuth Indicate that this transaction is a preauth
 	* @return int Returns the corresponding SECUREPAY_STATUS_* code
 	*/
-	function Process($ChargeAmount = null, $ChargeCurrency = null, $Cc = null, $ExpiryDate = null, $Cvv = null, $OrderId = null, $PreAuth = FALSE) {
+	function Process($ChargeAmount = null, $ChargeCurrency = null, $NameOnCard = null, $Cc = null, $ExpiryDate = null, $Cvv = null, $OrderId = null, $PreAuth = FALSE) {
 		// Set class variables from function call for later use {{{
 		if ($ChargeAmount) $this->ChargeAmount = $ChargeAmount;
 		if ($ChargeCurrency) $this->ChargeCurrency = $ChargeCurrency;
+		if ($NameOnCard) $this->NameOnCard = $NameOnCard;
 		if ($Cc) $this->Cc = $Cc;
 		if ($ExpiryDate) $this->ExpiryDate = $ExpiryDate;
 		if ($Cvv) $this->Cvv = $Cvv;
@@ -444,7 +452,7 @@ class SecurePay {
 
 		$this->RequestXml = $this->_ComposeRefund();
 		$this->ResponseXml = $this->_Dispatch($this->RequestXml);
-		
+
 		// If no XML response, assume processing timed out.
 		if ((false === $this->ResponseXml) || (false == is_string($this->ResponseXml))) {
 			return $this->_TranslateServerCode(512);
@@ -507,7 +515,7 @@ class SecurePay {
 		// If no XML response, assume processing timed out.
 		if ((false === $this->ResponseXml) || (false == is_string($this->ResponseXml))) {
 			$this->_TranslateServerCode(512);
-			
+
 			return false;
 		}
 
@@ -982,6 +990,8 @@ class SecurePay {
 			$message .= "\t\t\t\t\t<expiryDate>{$this->ExpiryDate}</expiryDate>\n";
 			if ($this->Cvv) // Provided with CVV/CV2 number
 				$message .= "\t\t\t\t\t<cvv>{$this->Cvv}</cvv>\n";
+			if ($this->NameOnCard) // Provided with credit card holder name
+				$message .= "\t\t\t\t\t<cardHolderName>{$this->NameOnCard}</cardHolderName>\n";
 			$message .= "\t\t\t\t</CreditCardInfo>\n";
 			$message .= "\t\t\t\t<amount>$cents</amount>\n";
 			$message .= "\t\t\t\t<currency>{$this->ChargeCurrency}</currency>\n";
@@ -1028,6 +1038,8 @@ class SecurePay {
 				$message .= "\t\t\t\t\t<expiryDate>{$this->ExpiryDate}</expiryDate>\n";
 				if ($this->Cvv) // Provided with CVV/CV2 number
 					$message .= "\t\t\t\t\t<cvv>{$this->Cvv}</cvv>\n";
+				if ($this->NameOnCard) // Provided with credit card holder name
+					$message .= "\t\t\t\t\t<cardHolderName>{$this->NameOnCard}</cardHolderName>\n";
 			}
 			$message .= "\t\t\t\t</CreditCardInfo>\n";
 			$message .= "\t\t\t</Txn>\n";
