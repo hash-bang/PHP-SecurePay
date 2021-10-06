@@ -1,3 +1,12 @@
+**NOTE: This module is depreciated since SecurePay has moved from their SOAP XML API to REST**
+**Please see the [SecurePay API](https://auspost.com.au/payments/docs/securepay/?javascript#securepay-api-card-payments-rest-api) to communicate with SecurePay**
+
+**The below documentation is provided for backwards compatibility for existing SOAP XML requests which use the old username / password system**
+
+---
+
+
+
 Very simple [SecurePay.com.au](http://www.securepay.com.au) API for PHP.
 
 The secure pay service is a reasonably reliable and well documented credit card gateway.
